@@ -32,6 +32,7 @@ function convertToSeconds(time) {
 document.addEventListener('DOMContentLoaded', function() {
   VimeoPlayer = {
     $: jQuery,
+    loop: false,
     checkPlayerStatus: function() {
       if (this.player) {
         var id = $(this.player.element).attr('src');
@@ -133,12 +134,42 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('not a number error');
       }
     },
+    changeLoopState: function(e) {
+      e.preventDefault();
+      var self = this;
+
+      this.checkPlayerStatus();
+      this.player.getCurrentTime().then(function(seconds) {
+        if (seconds < self.cueTimeA || seconds >= self.cueTimeB) {
+          self.player.setCurrentTime(self.cueTimeA).then(function(result) {
+            console.log(result);
+            self.loop = true;
+          }).catch(function(error) {
+            console.log(error);
+          });
+        } else {
+          self.loop = true;
+        }
+      });
+    },
     bind: function() {
       this.$('.video-loop-select').on('click', '[type="button"]', this.setCuePoint.bind(this));
       this.$('.video-loop-select').on('blur', '[type="text"]', this.setCuePointWithTime.bind(this));
+      this.$('.video-loop-select').on('submit', this.changeLoopState.bind(this));
+    },
+    resetPlayBackTime: function(e) {
+
+      if (this.loop === false) { return; }
+      if (e.id !== this.cueIdB) { return; }
+      this.player.setCurrentTime(this.cueTimeA).then(function(result) {
+        console.log(result);
+      }).catch(function(error) {
+        console.log(error);
+      });
     },
     initializePlayer: function(e) {
       this.player = new Vimeo.Player(this.$('iframe'));
+      this.player.on('cuepoint', this.resetPlayBackTime.bind(this));
     },
     init: function() {
       insertOptionsBar();
