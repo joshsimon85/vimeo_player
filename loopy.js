@@ -1,10 +1,38 @@
-// add in validations for a must be less than b
-
+// add in validations for A must be less than B
 var VimeoPlayer;
-var options = jQuery('<div class="ab-loop-wrapper"><form class="video-loop-select"><input type="button" value="Set A Point" data-btn="a" /><input type="text" name="apoint" data-input="a" placeholder="00:00 min"> &#x21ba;<input type="text" name="bpoint" data-input="b" placeholder="00:00 min"><input type="button" value="Set B Point" data-btn="b" /><input class="run-loop-button" type="submit" value="Run Loop"></form>&nbsp; &nbsp;<form class="video-speed-select"><select id="myList"><option value="" disabled selected>Video Speed</option><option value = "1">0.5x</option><option value = "2">0.75x</option><option value = "3">Normal</option><option value = "4">1.25x</option><option value = "5">1.5x</option><option value = "6">2x</option></select></form></div>');
+var options_template = ' \
+  <div class="ab-loop-wrapper fullscreen"> \
+    <div class="video-toolbar-titles fullscreen">AB Loop Toolbar</div> \
+    <form class="video-loop-select"> \
+      <input type="button" value="Set A Point" data-btn="a" class="set-a-button" /> \
+      <input type="text" name="apoint" data-input="a" class="set-a-input error" placeholder="00:00 min"> \
+      <div class="ab-loop-icon">&#x21ba;</div> \
+      <input type="text" name="bpoint" data-input="b" class="set-b-input error" placeholder="00:00 min"> \
+      <input type="button" value="Set B Point" data-btn="b" class="set-b-button" /> \
+      <input class="run-loop-button" type="submit" value="Run Loop"> \
+      <input type="button" value="Reset" data-btn="r" class="reset-loop" /> \
+    </form> \
+    <div class="video-toolbar-error abloop">This is a sample ab loop error message</div> \
+  <div class="video-toolbar-titles fullscreen">Adjust Playback Speed</div> \
+    <form class="video-speed-select"> \
+      <div class="video-speed-caret">	&#8964;</div> \
+      <select class="video-speed-options"> \
+        <option class="default" value="" disabled selected>Video Speed</option> \
+         <option value = "1">0.5x</option> \
+         <option value = "2">0.75x</option> \
+         <option value = "3">Normal</option> \
+         <option value = "4">1.25x</option> \
+         <option value = "5">1.5x</option> \
+         <option value = "6">2x</option> \
+      </select> \
+    </form> \
+    <div class="video-toolbar-error speed">This is a sample playback speed error message</div> \
+  </div> \
+';
+var options = jQuery(options_template);
 
 function insertOptionsBar() {
-  jQuery('.cgo-vp-video-wrapper').append(options);
+  jQuery('.cgo-vp-video-wrapper').after(options);
 }
 
 function formatTime(seconds) {
@@ -176,80 +204,5 @@ document.addEventListener('DOMContentLoaded', function() {
       this.bind();
     }
   };
-
-  // Loopy = {
-  //   setCuePoints: function(e) {
-  //     // need to check if previous cue points exist and remove them then add new ones
-  //     var $inputList = this.$('input');
-  //     var $inputA = $($inputList[1]);
-  //     var $inputB = $($inputList[2]);
-  //     var $target = $(e.target);
-  //     //var $input = $btn.next('input');
-  //     e.preventDefault();
-  //     if ($target.data('btn')) {
-  //       VimeoPlayer.setCuePoint(this.player, 'a').then(function(result) {
-  //
-  //       });
-  //
-  //     } else {
-  //       VimeoPlayer.setCuePointWithTime(this.player, 'a', time).then(function(result) {
-  //
-  //       });
-  //
-  //     }
-  //     // if ($input.attr('name') === 'apoint') {
-  //     //   this.player.getCurrentTime().then(function(seconds) {
-  //     //     self.player.addCuePoint(seconds, {
-  //     //       customKey: 'a'
-  //     //     }).then(function(id) {
-  //     //       self.aCueId = id;
-  //     //       $input.val(self.formatTime(seconds) + ' min');
-  //     //     }).catch(function(error) {
-  //     //       switch(error.name) {
-  //     //         case 'UnsupportedError':
-  //     //           console.log('cues are not supported in your browser');
-  //     //           break;
-  //     //         case 'RangeError':
-  //     //           console.log(error);
-  //     //           break;
-  //     //         default:
-  //     //           console.log('a general error occured');
-  //     //           console.log(error);
-  //     //           break;
-  //     //       }
-  //     //     });
-  //     //   });
-  //     // } else {
-  //     //   this.player.getCurrentTime().then(function(seconds) {
-  //     //     self.player.addCuePoint(seconds, {
-  //     //       customKey: 'end'
-  //     //     }).then(function(id) {
-  //     //       self.endCueId = id;
-  //     //       $btn.prev('input').val(self.formatTime(seconds) + ' min');
-  //     //     }).catch(function(error) {
-  //     //       switch(error.name) {
-  //     //         case 'UnsupportedError':
-  //     //           console.log('cues are not supported in your browser');
-  //     //           break;
-  //     //         case 'RangeError':
-  //     //           console.log(error);
-  //     //           break;
-  //     //         default:
-  //     //           console.log('a general error occured');
-  //     //           console.log(error);
-  //     //           break;
-  //     //       }
-  //     //     });
-  //     //   });
-  //       // set b point cue
-  //       // add error handling where a must be less than and not equal to b point
-  //   //  }
-  //     // also need to fire this on blur
-  //     // set up error handling for improper inputs
-  //     // set beginning and end cue points then we can add event listeners to them
-  //     //if (e.target)
-  //   }
-  // };
-
   VimeoPlayer.init();
 });

@@ -1,15 +1,19 @@
-<div class="ab-loop-wrapper">
+<div class="ab-loop-wrapper fullscreen">
+  <div class="video-toolbar-titles fullscreen">AB Loop Toolbar</div>
   <form class="video-loop-select">
-    <input type="button" value="Set A Point" />
-    <input type="text" name="apoint" placeholder="00:00 min"> &#x21ba;
-    <input type="text" name="bpoint" placeholder="00:00 min">
-    <input type="button" value="Set B Point" />
+    <input type="button" value="Set A Point" data-btn="a" class="set-a-button" />
+    <input type="text" name="apoint" data-input="a" class="set-a-input error" placeholder="00:00 min"><div class="ab-loop-icon">&#x21ba;</div><input type="text" name="bpoint" data-input="b" class="set-b-input error" placeholder="00:00 min">
+    <input type="button" value="Set B Point" data-btn="b" class="set-b-button" />
     <input class="run-loop-button" type="submit" value="Run Loop">
+    <input type="button" value="Reset" data-btn="r" class="reset-loop" />
   </form>
-  &nbsp; &nbsp;
+  <div class="video-toolbar-error abloop">This is a sample ab loop error message</div>
+
+<div class="video-toolbar-titles fullscreen">Adjust Playback Speed</div>
   <form class="video-speed-select">
-    <select id="myList">
-      <option value="" disabled selected>Video Speed</option>
+    <div class="video-speed-caret">	&#8964;</div>
+    <select class="video-speed-options">
+      <option class="default" value="" disabled selected>Video Speed</option>
                <option value = "1">0.5x</option>
                <option value = "2">0.75x</option>
                <option value = "3">Normal</option>
@@ -18,4 +22,5 @@
       <option value = "6">2x</option>
              </select>
   </form>
+  <div class="video-toolbar-error speed">This is a sample playback speed error message</div>
 </div>
