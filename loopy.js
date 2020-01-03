@@ -10,20 +10,25 @@ var options_template = ' \
       <input type="text" name="bpoint" data-input="b" class="set-b-input error" placeholder="00:00 min"> \
       <input type="button" value="Set B Point" data-btn="b" class="set-b-button" /> \
       <input class="run-loop-button" type="submit" value="Run Loop"> \
-      <input type="button" value="Reset" data-btn="r" class="reset-loop" /> \
+      <input type="button" value="Remove Loop" data-btn="r" class="reset-loop" /> \
     </form> \
     <div class="video-toolbar-error abloop">This is a sample ab loop error message</div> \
-  <div class="video-toolbar-titles fullscreen">Adjust Playback Speed</div> \
+    <div class="video-toolbar-titles fullscreen">Adjust Playback Speed</div> \
     <form class="video-speed-select"> \
       <div class="video-speed-caret">	&#8964;</div> \
       <select class="video-speed-options"> \
         <option class="default" value="" disabled selected>Video Speed</option> \
-         <option value = "1">0.5x</option> \
-         <option value = "2">0.75x</option> \
-         <option value = "3">Normal</option> \
-         <option value = "4">1.25x</option> \
-         <option value = "5">1.5x</option> \
-         <option value = "6">2x</option> \
+        <option value = "0.5">0.5x</option> \
+        <option value = "0.6">0.6x</option> \
+        <option value = "0.7">0.7x</option> \
+        <option value = "0.8">0.8x</option> \
+        <option value = "0.9">0.9x</option> \
+        <option value = "1.0">1.0x</option> \
+        <option value = "1.1">1.1x</option> \
+        <option value = "1.2">1.2x</option> \
+        <option value = "1.3">1.3x</option> \
+        <option value = "1.4">1.4x</option> \
+        <option value = "1.5">1.5x</option> \
       </select> \
     </form> \
     <div class="video-toolbar-error speed">This is a sample playback speed error message</div> \
@@ -61,15 +66,17 @@ document.addEventListener('DOMContentLoaded', function() {
   VimeoPlayer = {
     $: jQuery,
     loop: false,
+    playing: false,
+    initialLoop: true,
     checkPlayerStatus: function() {
       if (this.player) {
-        var id = $(this.player.element).attr('src');
+        var id = this.$(this.player.element).attr('src');
         if (id !== this.playerId) {
           // need to initialize a new player based on the iframe
         }
       } else {
         this.initializePlayer(this.$('iframe'));
-        this.playerId = $(this.player.element).attr('src');
+        this.setLoopBtn();
       }
     },
     checkCuePointStatus: function(cuePoint) {
@@ -129,64 +136,135 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
     },
-    setCuePointWithTime: function(e) {
-      e.preventDefault();
-      var $target = $(e.target);
-      var cuePoint = $target.data('input');
-      var self = this;
-      var seconds;
-
+    playerPausedState: function(_) {
       this.checkPlayerStatus();
-      this.checkCuePointStatus(cuePoint);
-      seconds = convertToSeconds($target.val());
+      this.playing = false;
+      this.changeLoopBtnState();
+    },
+    playerPlayingState: function(_) {
+      this.checkPlayerStatus();
+      this.playing = true;
+      this.changeLoopBtnState();
+    },
+    changeLoopBtnState: function() {
+      var STOP = 'Stop Loop';
+      var RUN = 'Run Loop';
+      // if player is stopped and a loop not set the btn should return and error
+      // if the player is stopped and loop is set is should show start loop
+      // if the player is started and the loop is not set it should display start loop
+      // if the player is started and the loop is set it should display stop loop
 
-      if (!!seconds) {
-        this.player.addCuePoint(seconds, {
-          customKey: cuePoint
-        }).then(function(id) {
-          if (cuePoint === 'a') {
-            self.cueIdA = id;
-            self.cueTimeA = seconds;
-          } else {
-            self.cueIdB = id;
-            self.cueTimeB = seconds;
-          }
-          self.setInputTime($target, seconds);
-        }).catch(function(error) {
-          //new ViemoError(error.name, error);
-          //add error to dom
-          console.log(error);
-        });
-      } else {
-        // add error to DOM
-        console.log('not a number error');
+      if (this.playing === false && this.loop === false) {
+        this.loopBtn.val(RUN);
+      }
+
+      if (this.playing === true && this.loop === false) {
+        this.loopBtn.val(RUN);
+      }
+
+      if (this.playing === true && this.loop === false) {
+        this.loopBtn.val(RUN);
+      }
+
+      if (this.playing === false && this.loop === true) {
+        this.loopBtn.val(RUN);
+      }
+
+      if (this.playing === true && this.loop === true) {
+        this.loopBtn.val(STOP);
       }
     },
-    changeLoopState: function(e) {
-      e.preventDefault();
+    startLoop: function(e) {
       var self = this;
 
-      this.checkPlayerStatus();
       this.player.getCurrentTime().then(function(seconds) {
         if (seconds < self.cueTimeA || seconds >= self.cueTimeB) {
           self.player.setCurrentTime(self.cueTimeA).then(function(result) {
             console.log(result);
             self.loop = true;
+            self.playing = true;
+            self.changeLoopBtnState();
+            self.player.getPaused().then(function(state) {
+              if (state === true) {
+                self.playing = true;
+                self.player.play().catch(function(error) {
+                  console.log(error);
+                });
+              }
+            });
+            // check if player is playing if it is do nothing otherwise play
+            // change text in submit btn
           }).catch(function(error) {
             console.log(error);
           });
         } else {
           self.loop = true;
+          self.player.play().catch(function(error) {
+            console.log(error);
+          });
         }
       });
     },
+    endLoop: function(e) {
+      var self = this;
+
+      this.playing = false;
+      this.player.pause().then(function(_) {
+        self.changeLoopBtnState();
+      });
+    },
+    changeLoopState: function(e) {
+      e.preventDefault();
+      this.checkPlayerStatus();
+
+      if (this.playing === false) {
+        this.startLoop(e);
+        this.initialLoop = false;
+      } else if (this.playing === true && this.initialLoop === true) {
+        this.initialLoop = false;
+        this.startLoop(e);
+      } else {
+        this.endLoop(e);
+      }
+    },
+    deleteCueItems: function() {
+      this.player.removeCuePoint(cueIdA).catch(function(error) {
+        console.log(error);
+      });
+      this.player.removeCuePoint(cueIdB).catch(function(error) {
+        console.log(error);
+      });
+      this.cueIdA = null;
+      this.cueIdB = null;
+    },
+    resetTimes: function($abloopbar) {
+      $abloopbar.find('.set-a-input').val('');
+      $abloopbar.find('.set-b-input').val('');
+    },
+    resetLoop: function(e) {
+      e.preventDefault();
+      var $el = this.$(e.target).parents('.ab-loop-wrapper');
+
+      this.loop = false;
+      this.initialLoop = true;
+      this.resetTimes($el);
+      this.changeLoopBtnState();
+    },
+    setSpeed: function(e) {
+      var speed = this.$(e.target).val();
+
+      this.checkPlayerStatus();
+      this.player.setPlayBackRate(+val).catch(function(error) {
+        console.log(error);
+      });
+    },
     bind: function() {
-      this.$('.video-loop-select').on('click', '[type="button"]', this.setCuePoint.bind(this));
-      this.$('.video-loop-select').on('blur', '[type="text"]', this.setCuePointWithTime.bind(this));
+      this.$('.set-a-button, .set-b-button').on('click', this.setCuePoint.bind(this));
       this.$('.video-loop-select').on('submit', this.changeLoopState.bind(this));
+      this.$('.reset-loop').on('click', this.resetLoop.bind(this));
+      this.$('.video-speed-select').on('change', this.setSpeed.bind(this));
     },
     resetPlayBackTime: function(e) {
-
       if (this.loop === false) { return; }
       if (e.id !== this.cueIdB) { return; }
       this.player.setCurrentTime(this.cueTimeA).then(function(result) {
@@ -195,9 +273,24 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(error);
       });
     },
+    setLoopBtn: function() {
+      var $iframeWrapper = this.$('iframe[src="' + this.playerId + '"]')
+                               .parents('.cgo-vp-video-wrapper');
+      this.loopBtn = $iframeWrapper.next('.ab-loop-wrapper')
+                                   .find('.run-loop-button');
+    },
+    bindPlayerEvents: function() {
+      this.player.on('cuepoint', this.resetPlayBackTime.bind(this));
+      this.player.on('pause', this.playerPausedState.bind(this));
+      this.player.on('play', this.playerPlayingState.bind(this));
+    },
+    setPlayerId: function() {
+      this.playerId = this.$(this.player.element).attr('src');
+    },
     initializePlayer: function(e) {
       this.player = new Vimeo.Player(this.$('iframe'));
-      this.player.on('cuepoint', this.resetPlayBackTime.bind(this));
+      this.setPlayerId();
+      this.bindPlayerEvents();
     },
     init: function() {
       insertOptionsBar();
@@ -206,3 +299,19 @@ document.addEventListener('DOMContentLoaded', function() {
   };
   VimeoPlayer.init();
 });
+// rules for loop btn
+// if player is stopped and a loop not set the btn should return and error
+// if the player is stopped and loop is set is should show start loop
+// if the player is started and the loop is not set it should display start loop
+// if the player is started and the loop is set it should display stop loop
+
+// check if player is playing and loop is set to true
+// if player is playing and loop is not set to true keep text as run loop
+// if player is playing and loop is set to true text should be stop loop
+// when paused if you hit run loop again nothing happens if the loop is set
+// create an event on player play that checks the val of the run loop btn
+// add this.playing: boolean
+// reset state when a new player is added, do I need to destroy all associated data?
+// when i reset state i need to destroy the cue points on that player
+// when we reset/initialize a player we need to clear loop state, cue ids, cue times, playing status
+// on pause and on play it needs to initialzie a player and set the state of the run loop btn
